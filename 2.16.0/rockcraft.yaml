@@ -1,0 +1,36 @@
+name: script-exporter
+summary: Prometheus exporter to execute scripts in a ROCK
+description: "Script exporter allows to execute scripts and collect metrics through Prometheus from the output or the exit status."
+version: "2.16.0"
+base: ubuntu:22.04
+build-base: ubuntu:22.04
+license: Apache-2.0
+services:
+  script-exporter:
+    command: /usr/bin/script_exporter --config.file=/etc/script-exporter.yaml
+    override: replace
+    startup: enabled
+platforms:
+  amd64:
+parts:
+  script-exporter:
+    plugin: go
+    source: https://github.com/ricoberger/script_exporter
+    source-type: git
+    source-tag: "v2.16.0"
+    build-snaps:
+      - go/1.21/stable
+    build-packages:
+      - make
+    override-build: |
+      make build
+      install -D -m755 ./bin/script_exporter ${CRAFT_PART_INSTALL}/usr/bin/script_exporter
+    stage:
+      - usr/bin/script_exporter
+  default-config:
+    plugin: dump
+    source: .
+    organize:
+      script-exporter.yaml: etc/script-exporter.yaml
+    stage:
+      - etc/script-exporter.yaml
